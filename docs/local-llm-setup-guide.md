@@ -276,7 +276,208 @@ model_list:
 
 ---
 
-## 6. Troubleshooting
+## 6. Claude Code with Remote LLMs (Qwen3.5-next & M2.5)
+
+### Method 1: Claude Code Shell Functions (Recommended)
+
+This is the easiest way to switch between remote LLMs in Claude Code.
+
+#### Step 1: Create Secrets File
+```bash
+# Create ~/.secrets file
+nano ~/.secrets
+
+# Add your API keys:
+export QWEN_API_KEY="your-alibaba-cloud-api-key"
+export MINIMAX_API_KEY="your-minimax-api-key"
+export Z_AI_API_KEY="your-z-ai-api-key"
+
+# Set strict permissions
+chmod 600 ~/.secrets
+```
+
+#### Step 2: Add Shell Functions
+Add to `~/.zshrc` (or `~/.bashrc`):
+
+```bash
+# Source secrets (add at top of file)
+if [ -f ~/.secrets ]; then
+    source ~/.secrets
+fi
+
+# Qwen3.5-plus via Alibaba Cloud Model Studio (Anthropic-compatible)
+qwen() {
+    export ANTHROPIC_BASE_URL="https://dashscope-intl.aliyuncs.com/apps/anthropic"
+    export ANTHROPIC_AUTH_TOKEN="${QWEN_API_KEY}"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="qwen-plus"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="qwen-plus"
+    claude "$@"
+}
+
+# Qwen3.5-next via Alibaba Cloud Model Studio
+qwen-next() {
+    export ANTHROPIC_BASE_URL="https://dashscope-intl.aliyuncs.com/apps/anthropic"
+    export ANTHROPIC_AUTH_TOKEN="${QWEN_API_KEY}"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="qwen3.5-plus"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="qwen3.5-plus"
+    claude "$@"
+}
+
+# MiniMax M2.5 via Anthropic-compatible API
+m2() {
+    export ANTHROPIC_BASE_URL="https://api.minimax.chat/v1/text/chatcompletion_v2"
+    export ANTHROPIC_AUTH_TOKEN="${MINIMAX_API_KEY}"
+    export ANTHROPIC_DEFAULT_MODEL="MiniMax-M2.5"
+    # Note: MiniMax uses OpenAI-compatible, so need different approach
+    claude "$@"
+}
+
+# Reset to default Claude Code
+claude-reset() {
+    unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN
+    unset ANTHROPIC_MODEL ANTHROPIC_DEFAULT_MODEL
+    echo "Reset to default Claude API"
+}
+```
+
+#### Step 3: Reload Shell
+```bash
+source ~/.zshrc
+```
+
+#### Step 4: Usage
+```bash
+# Use Qwen3.5-next
+qwen-next
+
+# Use Qwen3.5-plus
+qwen
+
+# Check current config
+env | grep ANTHROPIC
+
+# Reset to default
+claude-reset
+```
+
+---
+
+### Method 2: Claude Code CLI with --model Flag
+
+#### For Qwen3.5-next (Alibaba Cloud)
+
+```bash
+# Set environment variables
+export ANTHROPIC_BASE_URL="https://dashscope-intl.aliyuncs.com/apps/anthropic"
+export ANTHROPIC_AUTH_TOKEN="your-qwen-api-key"
+
+# Run Claude Code with Qwen model
+claude --model qwen3.5-plus
+```
+
+#### For M2.5 (MiniMax)
+
+MiniMax supports **two** API formats:
+
+**Option A: OpenAI-compatible (Recommended)**
+```bash
+export OPENAI_API_BASE="https://api.minimax.chat/v1"
+export OPENAI_API_KEY="your-minimax-api-key"
+
+# Note: Claude Code doesn't natively support OpenAI format
+# Use Method 3 below with LiteLLM
+```
+
+**Option B: Anthropic-compatible**
+```bash
+export ANTHROPIC_BASE_URL="https://api.minimax.io/v1"
+export ANTHROPIC_AUTH_TOKEN="your-minimax-api-key"
+
+# This may not work - MiniMax anthropic compatibility is limited
+```
+
+---
+
+### Method 3: LiteLLM (Most Reliable)
+
+LiteLLM provides consistent proxy for all providers.
+
+#### Step 1: Install LiteLLM
+```bash
+pip install litellm
+```
+
+#### Step 2: Create config.yaml
+```yaml
+model_list:
+  - model_name: qwen3.5-next
+    litellm_params:
+      model: qwen/qwen3.5-plus
+      api_key: ${QWEN_API_KEY}
+      api_base: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+
+  - model_name: m2.5
+    litellm_params:
+      model: MiniMax/M2.5
+      api_key: ${MINIMAX_API_KEY}
+      api_base: https://api.minimax.chat/v1
+
+litellm_settings:
+  drop_params: true
+  set_verbose: true
+```
+
+#### Step 3: Start LiteLLM Proxy
+```bash
+# Start proxy server
+litellm --config config.yaml --port 8787
+
+# Or with custom model
+litellm --model qwen3.5-next --api_base https://dashscope-intl.aliyuncs.com/compatible-mode/v1 --api_key $QWEN_API_KEY --port 8787
+```
+
+#### Step 4: Connect Claude Code
+```bash
+# Set Claude Code to use LiteLLM proxy
+export ANTHROPIC_BASE_URL="http://localhost:8787"
+export ANTHROPIC_AUTH_TOKEN="dummy-key"
+
+# Run Claude Code
+claude
+```
+
+---
+
+### Quick Reference: API Endpoints
+
+| Provider | Model | Endpoint | Format |
+|----------|-------|----------|--------|
+| **Alibaba Cloud** | Qwen3.5-plus | `https://dashscope-intl.aliyuncs.com/apps/anthropic` | Anthropic |
+| **Alibaba Cloud** | Qwen3.5-next | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | OpenAI |
+| **MiniMax** | M2.5 | `https://api.minimax.chat/v1` | OpenAI |
+| **MiniMax** | M2.5 | `https://api.minimax.io/v1` | Anthropic (limited) |
+
+---
+
+### Troubleshooting
+
+**Error: "Model not found"**
+- Check API key is correct
+- Verify endpoint URL matches provider documentation
+- Ensure model name is correct (case-sensitive)
+
+**Error: "Authentication failed"**
+- Verify API key has no typos
+- Check API key has sufficient quota
+- Ensure environment variables are set: `env | grep ANTHROPIC`
+
+**Error: "Connection refused"**
+- For LiteLLM: Start proxy first: `litellm --port 8787`
+- Check port is not in use: `lsof -i :8787`
+
+---
+
+## 7. Troubleshooting
 
 ### Issue: Model Won't Load (Out of Memory)
 **Solution:**
@@ -300,9 +501,25 @@ lsof -i :1234
 kill -9 <PID>
 ```
 
+### Issue: Claude Code Remote LLM Not Working
+**Solution:**
+```bash
+# Verify environment variables
+env | grep -i anthropic
+
+# Test API endpoint directly
+curl -X POST https://dashscope-intl.aliyuncs.com/apps/anthropic \
+  -H "Authorization: Bearer $QWEN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "qwen3.5-plus", "messages": [{"role": "user", "content": "hi"}]}'
+
+# Check LiteLLM proxy is running
+curl http://localhost:8787/v1/models
+```
+
 ---
 
-## 7. Summary
+## 8. Summary
 
 | Task | Tool | Command |
 |------|------|---------|
