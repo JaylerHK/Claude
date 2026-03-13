@@ -208,6 +208,28 @@ sessions_spawn runtime="acp" agentId="claude" task="Write a simple Python functi
 | `--model sonnet\|haiku\|opus` | Select model |
 | `--system-prompt "..."` | Custom system prompt |
 
+### Using GLM-5 (or other external models)
+
+If your Claude Code is configured with GLM-5, Qwen, or other external models, the default model is already set in your Claude Code config. The `-p` flag will use that default.
+
+**Explicit model selection:**
+```bash
+# Use GLM-5 (if configured as default)
+claude -p --dangerously-skip-permissions "Write hello world"
+
+# Specify model explicitly (if configured)
+claude -p --model glm-5 --dangerously-skip-permissions "Write hello world"
+
+# Use Anthropic model
+claude -p --model sonnet-4-20250514 --dangerously-skip-permissions "Write hello world"
+```
+
+**Common external model names:**
+- `glm-5` - GLM-5 on Z.ai
+- `qwen-plus` - Qwen3.5-plus on Alibaba Cloud
+- `qwen3.5-plus` - Qwen3.5-next
+- `MiniMax-M2.5` - MiniMax M2.5
+
 ### Examples
 
 ```bash
