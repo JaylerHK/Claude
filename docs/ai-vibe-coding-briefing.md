@@ -1,296 +1,530 @@
-# AI & Vibe Coding Daily Briefing
+# AI & Vibe Coding Daily Briefing — ACTIONABLE EDITION
 
-## I. Vibe Coding: Best Practices & Recommendations
-
-**Definition**: Vibe coding uses natural language to guide AI tools to generate code, focusing on describing what you want rather than writing syntax.
-
-### Best Practices (2026)
-
-1. **Start with Intent, Not Instructions**
-   - Explain WHY, not just WHAT
-   - Describe the user experience first, implementation second
-
-2. **Use Architectural Constraints Upfront**
-   - Set strong constraints before generating code
-   - Specify: tech stack, performance requirements, security needs
-
-3. **Iterative Refinement**
-   - Generate → Review → Iterate
-   - Don't expect perfect code in first pass
-
-4. **Structure Your Prompts**
-   ```
-   Problem → Architecture → Implementation → Review
-   ```
-
-5. **Trust but Verify**
-   - AI generates 10x more code than humans by 2026
-   - Always review before deploying
-
-### Top Tools (2026)
-
-| Tool | Best For |
-|------|----------|
-| **Claude Code** | Agentic coding, complex projects |
-| **Cursor** | IDE integration, fast iteration |
-| **Replit** | Quick prototyping |
-| **VS Code + Codex** | Full agent mode |
+> Comprehensive commands, prompts, configs, and best practices for coding agents.
 
 ---
 
-## II. Claude Skills 2.0: Boost Your Coding
+## I. Claude Code — Commands & Prompts
 
-### What Are Claude Skills?
+### 1. Essential Slash Commands
 
-Modular capabilities that extend Claude's functionality. Each skill packages instructions, metadata, and optional resources.
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/help` | Show all commands | `/help` |
+| `/review` | Code review mode | `/review` |
+| `/test` | Generate tests | `/test` |
+| `/doc` | Generate docs | `/doc` |
+| `/compact` | Summarize context | `/compact` |
+| `/config` | Configure settings | `/config` |
+| `/model` | Switch model | `/model sonnet` |
+| `/mcp` | Manage MCP servers | `/mcp add github` |
 
-### Must-Have Skills (2026)
-
-1. **Composio Skills** — 190+ integrations (GitHub, Slack, etc.)
-2. **Browser Automation** — agent-browser for web scraping/automation
-3. **Memory & Context** — persistent context across sessions
-4. **Frontend Design** — UI/UX generation
-5. **Remotion** — video generation from code
-6. **Multi-Agent Orchestration** — coordinate multiple agents
-
-### Recommended Skills for Your Goals
-
-| Category | Skill | Use Case |
-|----------|-------|----------|
-| **Trading** | API integrations | Connect to Binance, Polymarket |
-| **Scraping** | Browser automation | Collect market data |
-| **Multi-Agent** | Agent coordination | Nexus Trading orchestration |
-| **Financial** | Data processing | PnL calculations |
-
-### Installation
+### 2. CLI Commands (Non-Interactive)
 
 ```bash
-# Via ClawHub
-npx clawhub@latest install [skill-name]
+# Basic query (print mode, exits after)
+claude -p "What does this code do?" @./src/main.py
 
-# Via Claude Code
-claude install [skill-name]
+# With JSON output (for automation)
+claude -p --output-format=json "Summarize this file" @./utils.js
+
+# Skip permission prompts (for automated scripts)
+claude -p --dangerously-skip-permissions "Write hello to /tmp/test.txt"
+
+# Continue previous session
+claude -c "Continue working on the feature"
+
+# Resume specific session
+claude -r session-id "Finish the implementation"
+
+# Limit turns (for one-shot tasks)
+claude -p --max-turns 3 "Fix this bug" @./bug.py
+
+# Custom model
+claude -p --model sonnet-4-20250514 "Write a function"
 ```
 
----
+### 3. Best Practice Prompts
 
-## III. Claude Commands & CLI
+**Prompt 1: Code Review**
+```
+@./src/ Review this code for:
+1. Security vulnerabilities
+2. Performance issues
+3. Code smells
+4. Missing error handling
+Provide a numbered list of issues with severity (HIGH/MEDIUM/LOW)
+```
 
-### Essential Slash Commands
+**Prompt 2: Feature Implementation**
+```
+Implement a REST API endpoint for user authentication with:
+- JWT tokens
+- Password hashing (bcrypt)
+- Refresh token rotation
+- Return working code with tests
+```
 
-| Command | Function |
-|---------|----------|
-| `/help` | Show all commands |
-| `/review` | Code review mode |
-| `/test` | Generate tests |
-| `/doc` | Generate documentation |
-| `/compact` | Summarize context for next session |
-| `/context` | See current context usage |
+**Prompt 3: Bug Fix**
+```
+Debug this error: "TypeError: Cannot read property 'id' of undefined"
+@./src/user-service.js
+Provide the fix and explain the root cause
+```
 
-### Claude.md Best Practices
+**Prompt 4: Refactoring**
+```
+Refactor this class to:
+- Use dependency injection
+- Make it more testable
+- Follow SOLID principles
+@./src/services/EmailService.js
+```
 
-Create a `CLAUDE.md` in project root:
+### 4. File References (@)
+
+```bash
+# Single file
+claude -p "Review this" @./src/Button.tsx
+
+# Directory (recursive)
+claude -p "Add error handling" @./src/api/
+
+# Multiple files
+claude -p "Compare implementations" @./src/old.js @./src/new.js
+
+# Glob patterns
+claude -p "Review all tests" @./src/**/*.test.ts
+```
+
+### 5. CLAUDE.md Template
+
+Create `CLAUDE.md` in project root:
 
 ```markdown
 # Project Context
-- Tech stack: React, FastAPI, Python
-- Coding standards: TypeScript, PEP8
-- Testing: pytest, 80% coverage
 
-# Key Files
-- src/api/main.py - Entry point
-- src/models/ - Data models
+## Tech Stack
+- Frontend: React 18, TypeScript, Tailwind
+- Backend: FastAPI, Python 3.11, PostgreSQL
+- Testing: pytest, Vitest
 
-# Common Tasks
-- Run tests: pytest
-- Start server: uvicorn src.api.main:app
+## Coding Standards
+- Python: PEP 8, type hints required
+- TypeScript: strict mode, no any
+- Commits: conventional commits
+
+## Key Commands
+- Run tests: pytest && npm test
+- Start dev: docker-compose up
+- Lint: ruff check . && npm run lint
+
+## Architecture
+- /src/api - REST endpoints
+- /src/models - Database models
+- /src/services - Business logic
+
+## Common Tasks
+- Add API route: create in /src/api/
+- Add model: use SQLAlchemy base
+- Run migrations: alembic upgrade head
 ```
 
-### CLI Flags for Non-Interactive Mode
+### 6. Configuration Example
 
-```bash
-# Print mode (no TUI)
-claude -p --dangerously-skip-permissions "Your prompt"
-
-# With JSON output
-claude --print --output-format=json --dangerously-skip-permissions "prompt"
-
-# With custom model
-claude -p --model sonnet-4-20250514 "prompt"
+```json
+{
+  "model": "claude-sonnet-4-20250514",
+  "maxTokens": 4096,
+  "permissions": {
+    "allow": ["Read", "Write", "Bash(git *)"],
+    "deny": ["Read(./.env)", "Write(./prod.config)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write(*.py)",
+        "hooks": [{"type": "command", "command": "ruff format $file"}]
+      }
+    ]
+  }
+}
 ```
+
+### 7. Resources
+
+- **Docs**: https://docs.anthropic.com/en/docs/claude-code
+- **GitHub**: https://github.com/anthropics/claude-code
+- **Best Practices**: https://www.eesel.ai/blog/claude-code-best-practices
 
 ---
 
-## IV. MiniMax M2.5: Best Practices
+## II. Claude Code Skills
 
-### Why M2.5?
+### Installing Skills
 
-- **80.2% on SWE-Bench** — matches Claude Opus
-- **$1/hour** — 1/20th the cost of Claude
-- **Agentic native** — built for tool use
+```bash
+# Via ClawHub
+npx clawhub install polyclaw
 
-### Best Practices
+# Via Claude Code CLI
+claude mcp add server-name
 
-1. **Be Clear and Specific**
-   - State expected output format
-   - Break complex tasks into steps
+# Create custom skill
+mkdir -p .claude/skills/my-skill
+# Create SKILL.md in that directory
+```
 
-2. **Use Interleaved Thinking**
-   - M2.5 reasons between each tool call
-   - Good for multi-step agentic workflows
+### Recommended Skills for Your Goals
 
-3. **Function Calling**
-   - Native tool use support
-   - Use for API integrations, data fetching
+| Skill | Command | Use Case |
+|-------|---------|----------|
+| **PolyClaw** | `npx clawhub install polyclaw` | Polymarket trading |
+| **Composio** | `npx clawhub install composio` | 190+ app integrations |
+| **Browser Automation** | Built-in | Web scraping, testing |
+| **Memory** | Built-in | Context persistence |
 
-### API Configuration
+### Skill Structure (SKILL.md)
+
+```yaml
+---
+name: trade-analyzer
+description: Analyze trading strategies and suggest improvements
+---
+
+# Trade Analyzer Skill
+
+When user asks to analyze trading performance:
+1. Load trade history from database
+2. Calculate metrics: win rate, P&L, Sharpe ratio
+3. Identify patterns in winning/losing trades
+4. Suggest optimizations
+5. Output as markdown report
+
+Example: "Analyze my Polymarket trades" → detailed performance report
+```
+
+### Resources
+
+- **ClawHub**: https://clawhub.ai/skills
+- **Skill Docs**: https://docs.anthropic.com/en/docs/claude-code/extended-capabilities/skills
+
+---
+
+## III. MiniMax M2.5 — API & Config
+
+### API Endpoints
+
+| Region | Anthropic SDK | OpenAI SDK |
+|--------|--------------|------------|
+| **International** | `https://api.minimax.io/anthropic` | `https://api.minimax.io/v1` |
+| **China** | `https://api.minimaxi.com/anthropic` | `https://api.minimaxi.com/v1` |
+
+### Python Example (Anthropic SDK)
 
 ```python
-# OpenAI-compatible
+from anthropic import Anthropic
+
+client = Anthropic(
+    api_key="your-minimax-key",
+    base_url="https://api.minimax.io/anthropic"
+)
+
+response = client.messages.create(
+    model="MiniMax-M2.5",
+    max_tokens=4096,
+    messages=[{"role": "user", "content": "Write a Python function to calculate moving average"}]
+)
+
+print(response.content[0].text)
+```
+
+### Python Example (OpenAI SDK)
+
+```python
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="your-key",
-    base_url="https://api.minimax.chat/v1"
+    api_key="your-minimax-key",
+    base_url="https://api.minimax.io/v1"
 )
 
 response = client.chat.completions.create(
     model="MiniMax-M2.5",
-    messages=[{"role": "user", "content": "Your prompt"}],
-    tools=[...]  # Function definitions
+    messages=[{"role": "user", "content": "Write a REST API"}],
+    extra_body={"reasoning_split": True}  # Enable interleaved thinking
 )
+
+print(response.choices[0].message.content)
 ```
 
-### Claude Code Integration
+### Function Calling Example
 
-```bash
-# In Claude Code, configure in claude_settings:
-{
-  "model": "MiniMax-M2.5",
-  "api_key": "your-minimax-key"
-}
+```python
+from anthropic import Anthropic
+
+client = Anthropic(
+    api_key="your-key",
+    base_url="https://api.minimax.io/anthropic"
+)
+
+# Define tools
+tools = [
+    {
+        "name": "get_stock_price",
+        "description": "Get current stock price",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string", "description": "Stock ticker"}
+            },
+            "required": ["symbol"]
+        }
+    }
+]
+
+response = client.messages.create(
+    model="MiniMax-M2.5",
+    messages=[{"role": "user", "content": "What's the price of AAPL?"}],
+    tools=tools
+)
+
+# Check for tool use
+if response.stop_reason == "tool_use":
+    tool_use = response.content[0]
+    print(f"Use tool: {tool_use.name}")
+    # Execute tool, then append result and call again
 ```
-
----
-
-## V. Qwen3.5 & Next Gen: Best Practices
-
-### Qwen Ecosystem
-
-| Model | Best For | Parameters |
-|-------|----------|------------|
-| **Qwen3.5-Plus** | General agentic tasks | ~30B |
-| **Qwen3.5-Coder** | Code generation | 3B-32B |
-| **Qwen3-Coder-Next** | Production coding | 480B A35B |
-
-### Qwen3.5 Strengths
-
-- **MoE architecture** — 35B-A3B = 3B active = fast
-- **Excellent function calling** — perfect for agents
-- **Long context** — up to 128K tokens
 
 ### Best Practices
 
-1. **Use Coder Models for Code Tasks**
-   ```
-   Qwen2.5-Coder-32B matches GPT-4o on coding benchmarks
-   ```
+1. **Enable Interleaved Thinking**: Use `reasoning_split: True` for agentic tasks
+2. **Preserve Full Response**: Keep `response.content` in message history
+3. **Be Specific**: Clear instructions = better output
+4. **Use Tools**: M2.5 excels at function calling
 
-2. **Enable Agent Mode**
-   ```bash
-   qwen-agent --model qwen-coder-32b "Build a REST API"
-   ```
+### Resources
 
-3. **Function Calling**
-   - Define tools in JSON schema
-   - Use `function_call` parameter
+- **Docs**: https://platform.minimax.io/docs/guides/text-m2-function-call
+- **Pricing**: https://platform.minimax.io/docs/pricing/overview
+- **Coding Plan**: $1/hour — https://platform.minimax.io/subscribe/coding-plan
 
-### API via LiteLLM
+---
+
+## IV. Qwen — API & Config
+
+### Model Options
+
+| Model | Best For | API |
+|-------|----------|-----|
+| **Qwen3.5-Plus** | General tasks | Alibaba Cloud |
+| **Qwen3.5-Coder-32B** | Code generation | Local/API |
+| **Qwen3-Coder-Next** | Production coding | API |
+
+### LiteLLM Example
 
 ```python
 import litellm
 
+# Using LiteLLM (unified interface)
 response = litellm.completion(
     model="qwen/qwen-plus",
-    messages=[{"role": "user", "content": "Write a Python function"}],
-    api_key="your-key"
+    messages=[{"role": "user", "content": "Write a Python decorator"}],
+    api_key="your-alibaba-key",
+    base_url="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 )
+
+print(response.choices[0].message.content)
 ```
 
----
+### Claude Code + Qwen
 
-## VI. GLM-5 & Successors: Best Practices
+```bash
+# In Claude Code, configure:
+{
+  "model": "qwen-plus",
+  "api_key": "your-key",
+  "api_base": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+}
 
-### GLM-5 Overview
+# Then use normally
+claude -p "Write a FastAPI app"
+```
 
-- **744B parameters** (MoE, ~40B active)
-- **Frontier-level performance** — tops coding benchmarks
-- **Agentic engineering** — designed for complex systems
+### Qwen Code (Agentic CLI)
 
-### ⚠️ Local Running?
+```bash
+# Install Qwen Code
+npm install -g @qwen/qwen-code
 
-| Quantization | RAM Needed | Feasible? |
-|--------------|------------|-----------|
-| 4-bit | ~400GB | ❌ No Mac |
-| 8-bit | ~805GB | ❌ No Mac |
-| Cloud API | N/A | ✅ Recommended |
+# Run agentic task
+qwen-code "Build a todo app with React"
 
-**Use GLM-5 via API** — not locally feasible.
-
-### Best Practices
-
-1. **Use for Complex Agentic Tasks**
-   - Multi-step reasoning
-   - System engineering
-   - Production-grade code
-
-2. **API Configuration**
-   ```python
-   # Via Z.ai API
-   response = client.chat.completions.create(
-       model="glm-5",
-       messages=[...],
-       api_key="your-zai-key"
-   )
-   ```
-
-3. **Claude Code + GLM-5**
-   ```bash
-   # Configure in Claude Code
-   claude --model glm-5 "Your prompt"
-   ```
-
-### When to Use GLM-5
-
-| Task | Recommended Model |
-|------|-------------------|
-| Quick scripts | Qwen3.5-9B |
-| Production code | GLM-5 (API) |
-| Local offline | GLM-4.7 Flash |
-| Agentic workflows | GLM-5 / M2.5 |
-
----
-
-## VII. Action Items for Jayler
-
-### Today
-
-- [ ] Set up Claude Code SSH access on Mac
-- [ ] Configure acpx for MaxClaw → Claude Code integration
-- [ ] Install relevant Claude Skills via ClawHub
-
-### This Week
-
-- [ ] Test Claude Code with GLM-5 via --model flag
-- [ ] Explore MiniMax M2.5 for agentic tasks
-- [ ] Review Nexus Trading code with Claude Code
+# With specific model
+qwen-code --model qwen-coder-32b "Create a REST API"
+```
 
 ### Resources
 
-- CLAUDE.md: Create in each project
-- Skills: `npx clawhub install [name]`
-- Models: Use API for GLM-5, local for Qwen/GLM-4.7
+- **Qwen3.5 Docs**: https://qwen.readthedocs.io/
+- **Qwen Code**: https://github.com/Qwen/Qwen3-Coder
+- **Alibaba Cloud**: https://www.alibabacloud.com/product/model-studio
 
 ---
 
-*Briefing generated by MaxClaw — 2026*
+## V. OpenClaw (MaxClaw) — Commands
+
+### Spawning Subagents
+
+```bash
+# One-shot task (run mode)
+sessions_spawn task="Write a Python function" runtime="subagent"
+
+# Persistent session (session mode)
+sessions_spawn task="Build the API" runtime="subagent" thread=true mode="session"
+
+# Spawn with specific model
+sessions_spawn task="Code review" runtime="subagent" model="claude-sonnet-4"
+
+# Resume previous session
+sessions_spawn task="Continue work" resumeSessionId="session-id"
+```
+
+### ACP Agents (Claude Code on Mac)
+
+```bash
+# Install ACP plugin
+openclaw plugins install acpx
+
+# Spawn Claude Code via ACP
+/acp spawn claude --mode oneshot
+
+# Persistent Claude Code session
+/acp spawn claude --mode persistent --thread auto
+
+# Check status
+/acp status
+
+# List sessions
+/acp sessions
+```
+
+### OpenClaw Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/subagents list` | Show active subagents |
+| `/subagents kill` | Stop subagent |
+| `/acp spawn` | Spawn ACP agent |
+| `/acp cancel` | Cancel running task |
+| `/status` | Show session status |
+
+### Configuration
+
+```json
+{
+  "acp": {
+    "enabled": true,
+    "allowedAgents": ["claude", "codex", "pi"],
+    "defaultAgent": "claude"
+  },
+  "plugins": {
+    "entries": {
+      "acpx": {
+        "enabled": true,
+        "config": {
+          "permissionMode": "approve-all"
+        }
+      }
+    }
+  }
+}
+```
+
+### Resources
+
+- **Docs**: https://docs.openclaw.ai
+- **GitHub**: https://github.com/openclaw/openclaw
+- **Commands**: https://docs.openclaw.ai/tools/subagents
+
+---
+
+## VI. GLM-5 — API & Config
+
+### ⚠️ Important: Not Local
+
+GLM-5 requires 180GB+ RAM — **use via API only**.
+
+### API Configuration
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-zai-key",
+    base_url="https://open.bigmodel.cn/api/paas/v4"
+)
+
+response = client.chat.completions.create(
+    model="glm-5",
+    messages=[{"role": "user", "content": "Build a trading bot"}]
+)
+```
+
+### Claude Code + GLM-5
+
+```bash
+# Configure in Claude Code settings
+{
+  "model": "glm-5",
+  "api_key": "your-zai-key",
+  "api_base": "https://open.bigmodel.cn/api/paas/v4"
+}
+```
+
+### Best For
+
+- Complex agentic workflows
+- Multi-step reasoning
+- Production-grade code generation
+
+### Resources
+
+- **Z.ai**: https://z.ai/
+- **API Docs**: https://docs.z.ai/
+
+---
+
+## VII. Action Items
+
+### Today
+
+- [ ] Test CLI commands on your Mac:
+  ```bash
+  claude -p --dangerously-skip-permissions "Write hello to /tmp/test.txt"
+  ```
+- [ ] Create `CLAUDE.md` in Nexus Trading project
+- [ ] Install Claude Code skills: `npx clawhub install polyclaw`
+
+### This Week
+
+- [ ] Configure MiniMax M2.5 in LiteLLM
+- [ ] Set up SSH for MaxClaw → Claude Code integration
+- [ ] Test Qwen via LiteLLM
+
+---
+
+## Links Summary
+
+| Resource | URL |
+|----------|-----|
+| Claude Code Docs | https://docs.anthropic.com/en/docs/claude-code |
+| MiniMax Docs | https://platform.minimax.io/docs |
+| Qwen Docs | https://qwen.readthedocs.io/ |
+| OpenClaw Docs | https://docs.openclaw.ai |
+| ClawHub Skills | https://clawhub.ai/skills |
+| CLAUDE.md Guide | https://uxplanet.org/claude-md-best-practices |
+
+---
+
+*_Powered by MAX CLAW_*
